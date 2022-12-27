@@ -1,0 +1,88 @@
+--------------------------------------------------------------------------------
+netPROXY V2 Core
+--------------------------------------------------------------------------------
+
+V2.2.1.0
+--------
+ - PSNPXV2-53:  Add reference implemantation for string name handling 
+ - PSNPXV2-55:  Add new function to compare interfaces handles 
+
+
+V2.2.0.0
+--------
+ - PSNPXV2-51:  Update doxygen documentation 
+ - PSNPXV2-52:  Remove all deprecated stuff 
+
+
+V2.1.10.0
+---------
+ - PSNPXV2-50:  Add support for netX90 and netX400 
+
+
+V2.1.9.0
+--------
+ - PSNPXV2-48:  Add missing facility codes for event log 
+ - PSNPXV2-49:  Avoid memory operations on the heap 
+
+
+V2.1.8.0
+--------
+ - PSNPXV2-29:  The function Npx_AddPackage and Npx_DeletePackage crash in case of wrong parameters 
+ - PSNPXV2-39:  Rename function for open, close a interface handle 
+ - PSNPXV2-40:  Npx_Open check the content of the uninitialized pointer 
+ - PSNPXV2-41:  Update result codes 
+ - PSNPXV2-43:  Rename functions for open and closing of object handles 
+ - PSNPXV2-45:  Remove object handle from behaviore callback 
+ - PSNPXV2-46:  Remove stroage of strings from eventlog 
+ - PSNPXV2-47:  Remove internal string handling for objects 
+
+
+V2.1.7.0
+--------
+ - PSNPXV2-5:  Change style according to "AA-Nr. 264 Hilscher Coding Styleguide C" 
+ - PSNPXV2-28:  Add event log facility for EtherNet/IP Adapter package 
+ - PSNPXV2-31:  Add Error Checks for Reading Event Log  
+ - PSNPXV2-32:  Use UINT32 data type for result code 
+ - PSNPXV2-34:  Remove return value from asynchronous read/write function 
+ - PSNPXV2-35:  Remove handle 'self check' mechanism 
+ - PSNPXV2-36:  Function names are not consistently 
+ - PSNPXV2-37:  Creat and Open Interface function is not monolitic 
+ - PSNPXV2-38:  Use deprecated attribute for function calls 
+
+
+V2.1.6.0
+--------
+ - PSNPXV2-7:  Remove unusual used function (async read/write without handle) 
+ - PSNPXV2-11:  Only support one interface in Core 
+ - PSNPXV2-14:  Clenup error handling 
+
+
+V2.1.5.0
+--------
+ - PSNPXV2-3:  Sync read or write object not possible from update notification callback 
+ - PSNPXV2-9:  Use linked list from PS toolbox 
+ - PSNPXV2-12:  VolatileStorageObjectEntity function depens on mutex in interface 
+ - PSNPXV2-15:  Create library version which only support one interface 
+ - PSNPXV2-20:  Add event log functionality to netPROXY API 
+ - PSNPXV2-22:  Add API testsuite for Unitiy test framework 
+
+
+V2.1.4.0
+--------
+ - PSNPXV2-8:  Static Code analysis - Remove all W2 issues 
+ - PSNPXV2-10:  Use Version header file 
+ - PSNPXV2-18:  Add the "netPROXY - Object List" 
+
+
+V2.1.3.0
+--------
+ - PSNPXV2-2:  Npx_RegisterUpdateNotifyCallback will forward the Interface handle to third contexes 
+ - PSNPXV2-4:  Registered write notify callback could be executed from two contexts at the same time 
+ - PSNPXV2-13:  Update OSAL to V1.0.5.0 
+ - PSNPXV2-16:  Add new variable lenght element type 
+
+
+V2.1.2.0
+--------
+ - PSNPXV2-17:  Implement the functionality to get the Object and Element descriptions 
+ - PSNPXV2-21:  Add functionality to get the number of instances of an object 

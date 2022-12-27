@@ -1,0 +1,17 @@
+Used Libraries
+==============
+
+arm-none-eabi/4.5.2
+-------------------
+osal             OS Abstraction Library Api Definitions V1.1.1.0
+ps_toolbox_sdk   PS Toolbox SDK V1.2.0.1
+
+armv7em-none-eabi/4.9.3
+-----------------------
+osal             OS Abstraction Library Api Definitions V1.1.1.0
+ps_toolbox_sdk   PS Toolbox SDK V1.2.0.1
+
+armv7r-none-eabi/4.9.3
+----------------------
+osal             OS Abstraction Library Api Definitions V1.1.1.0
+ps_toolbox_sdk   PS Toolbox SDK V1.2.0.1
