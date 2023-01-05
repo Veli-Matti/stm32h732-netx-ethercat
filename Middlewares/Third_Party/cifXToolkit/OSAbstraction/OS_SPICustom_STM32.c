@@ -49,7 +49,7 @@ Copyright (c) Hilscher Gesellschaft fuer Systemautomation mbH. All Rights Reserv
 #include "main.h"
 
 
-extern SPI_HandleTypeDef SpiHandle;
+extern SPI_HandleTypeDef hspi1;
 
 /*****************************************************************************/
 /*!  \addtogroup CIFX_TK_OS_ABSTRACTION Operating System Abstraction
@@ -90,15 +90,15 @@ void OS_SpiTransfer(void* pvOSDependent, uint8_t* pbSend, uint8_t* pbRecv, uint3
 
 	/*no receive data requested (just transmit) */
 	if(pbRecv==NULL){
-		tRet=HAL_SPI_Transmit_IT(&SpiHandle, pbSend, (uint16_t) ulLen);
+		tRet=HAL_SPI_Transmit_IT(&hspi1, pbSend, (uint16_t) ulLen);
 
 	}
 	/*no transmit data (just receive) */
 	else if(pbSend==NULL) {
-		tRet=HAL_SPI_Receive_IT(&SpiHandle, pbRecv, (uint16_t) ulLen);
+		tRet=HAL_SPI_Receive_IT(&hspi1, pbRecv, (uint16_t) ulLen);
 	}
 	else {
-		tRet=HAL_SPI_TransmitReceive_IT(&SpiHandle, pbSend, pbRecv, (uint16_t) ulLen);
+		tRet=HAL_SPI_TransmitReceive_IT(&hspi1, pbSend, pbRecv, (uint16_t) ulLen);
 	}
 
 
@@ -107,7 +107,7 @@ void OS_SpiTransfer(void* pvOSDependent, uint8_t* pbSend, uint8_t* pbRecv, uint3
 	}
 
 	/*blocking SPI transfer, wait until all bytes are transferred*/
-	while(HAL_SPI_STATE_READY != HAL_SPI_GetState(&SpiHandle));
+	while(HAL_SPI_STATE_READY != HAL_SPI_GetState(&hspi1));
 }
 
 /*****************************************************************************/

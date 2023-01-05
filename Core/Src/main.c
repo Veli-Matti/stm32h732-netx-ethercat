@@ -1,20 +1,20 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file           : main.c
-  * @brief          : Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2022 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file           : main.c
+ * @brief          : Main program body
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2022 STMicroelectronics.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -22,7 +22,11 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <stdbool.h>
+#include <stdio.h>
+#include "cifXToolkit.h"
+#include "cifXErrors.h"
+#include "SerialDPMInterface.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -45,7 +49,8 @@ SPI_HandleTypeDef hspi1;
 
 osThreadId defaultTaskHandle;
 /* USER CODE BEGIN PV */
-
+// Some of Hilscher code uses a global handle called SPIHandle
+//SPI_HandleTypeDef SpiHandle;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -60,7 +65,86 @@ void StartDefaultTask(void const * argument);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+static bool isCookieAvailable(PDEVICEINSTANCE ptDevInstance,
+        uint32_t ulTimeoutInMs) {
+    bool fCookieAvailable = false;
+    char szCookie[5];
+    uint32_t starttime;
+    uint32_t difftime = 0;
 
+    starttime = OS_GetMilliSecCounter();
+
+    while (false == fCookieAvailable && difftime < ulTimeoutInMs) {
+        OS_Memset(szCookie, 0, sizeof(szCookie));
+
+        HWIF_READN(ptDevInstance, szCookie, ptDevInstance->pbDPM, 4);
+
+        /** on DPM cards we need to check the for a valid cookie */
+        if ((0 == OS_Strcmp(szCookie, CIFX_DPMSIGNATURE_BSL_STR))
+                || (0 == OS_Strcmp(szCookie, CIFX_DPMSIGNATURE_FW_STR))) {
+            /** We have a firmware or bootloader running, so we assume it is a flash based device */
+            /** NOTE: If the driver is restarted and a RAM based FW was downloaded before this
+             will result in the device being handled as flash based.
+             Currently there is no way to detect this */
+            fCookieAvailable = true;
+        } else {
+            fCookieAvailable = false;
+            difftime = OS_GetMilliSecCounter() - starttime;
+        }
+    }
+    if (false == fCookieAvailable) {
+        printf("DPM cookie not available since %u milliseconds\r\n",
+                (unsigned int) ulTimeoutInMs);
+    }
+    return fCookieAvailable;
+}
+
+static int32_t initCifXToolkit() {
+
+    int32_t lRet = 0; /* Return value for common error codes      */
+
+    /* First of all initialize toolkit */
+    lRet = cifXTKitInit();
+
+    if (CIFX_NO_ERROR == lRet) {
+        PDEVICEINSTANCE ptDevInstance = (PDEVICEINSTANCE) OS_Memalloc(
+                sizeof(*ptDevInstance));
+        OS_Memset(ptDevInstance, 0, sizeof(*ptDevInstance));
+
+        /* Set trace level of toolkit */
+        g_ulTraceLevel = TRACE_LEVEL_ERROR | TRACE_LEVEL_WARNING
+                | TRACE_LEVEL_INFO | TRACE_LEVEL_DEBUG;
+
+        /* Insert the basic device information , into the DeviceInstance structure
+         for the toolkit. The DPM address must be zero, as we only transfer address
+         offsets via the SPI interface.
+         NOTE: The physical address and irq number are for information use
+         only, so we skip them here. Interrupt is currently not supported
+         and ignored, so we dont need to set it */
+        ptDevInstance->fPCICard = 0;
+        ptDevInstance->pvOSDependent = ptDevInstance;
+        ptDevInstance->ulDPMSize = 0x10000;
+        OS_Strncpy(ptDevInstance->szName, "cifX0",
+                sizeof(ptDevInstance->szName));
+
+        /* netX needs some time until SPM is ready for netX type autodetection */
+        OS_Sleep(500);
+
+        /* netX type corresponding SPM initialization */
+        printf("netX type detection and SPM initialisation ...\n\r");
+        lRet = SerialDPM_Init(ptDevInstance);
+        printf("netX type 0x%02x\n\r", (char) lRet);
+
+        /** we know that netX firmware is flash based in this application, therefore we check if it starts up
+         ** by comparing cookie at DPM address 0x00 is valid.*/
+        while (false == isCookieAvailable(ptDevInstance, 100))
+            ;
+
+        /* Add the device to the toolkits handled device list */
+        lRet = cifXTKitAddDevice(ptDevInstance);
+    }
+    return lRet;
+}
 /* USER CODE END 0 */
 
 /**
@@ -100,22 +184,31 @@ int main(void)
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
 
+    /*Configure GPIO pin Output Level */
+    HAL_GPIO_WritePin(SPI1_CS_VMK_GPIO_Port, SPI1_CS_VMK_Pin, GPIO_PIN_SET);
+
+    int32_t lRet = initCifXToolkit();
+    /* If it succeeded, start the cifX application*/
+    if (lRet == CIFX_NO_ERROR) {
+        //lRet = App_CifXApplicationDemo();
+    }
+
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
-  /* add mutexes, ... */
+    /* add mutexes, ... */
   /* USER CODE END RTOS_MUTEX */
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
-  /* add semaphores, ... */
+    /* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
 
   /* USER CODE BEGIN RTOS_TIMERS */
-  /* start timers, add new ones, ... */
+    /* start timers, add new ones, ... */
   /* USER CODE END RTOS_TIMERS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
-  /* add queues, ... */
+    /* add queues, ... */
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
@@ -124,7 +217,7 @@ int main(void)
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
-  /* add threads, ... */
+    /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
 
   /* Start scheduler */
@@ -133,12 +226,11 @@ int main(void)
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
+    while (1) {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-  }
+    }
   /* USER CODE END 3 */
 }
 
@@ -219,16 +311,16 @@ static void MX_SPI1_Init(void)
   hspi1.Instance = SPI1;
   hspi1.Init.Mode = SPI_MODE_MASTER;
   hspi1.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi1.Init.DataSize = SPI_DATASIZE_4BIT;
-  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi1.Init.CLKPolarity = SPI_POLARITY_HIGH;
+  hspi1.Init.CLKPhase = SPI_PHASE_2EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
   hspi1.Init.CRCPolynomial = 0x0;
-  hspi1.Init.NSSPMode = SPI_NSS_PULSE_ENABLE;
+  hspi1.Init.NSSPMode = SPI_NSS_PULSE_DISABLE;
   hspi1.Init.NSSPolarity = SPI_NSS_POLARITY_LOW;
   hspi1.Init.FifoThreshold = SPI_FIFO_THRESHOLD_01DATA;
   hspi1.Init.TxCRCInitializationPattern = SPI_CRC_INITIALIZATION_ALL_ZERO_PATTERN;
@@ -269,7 +361,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOB, LD3_Pin|LD2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(SPI1_CS_VMK_GPIO_Port, SPI1_CS_VMK_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(SPI1_CS_VMK_GPIO_Port, SPI1_CS_VMK_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(USB_PowerSwitchOn_GPIO_Port, USB_PowerSwitchOn_Pin, GPIO_PIN_RESET);
@@ -315,19 +407,18 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN Header_StartDefaultTask */
 /**
-  * @brief  Function implementing the defaultTask thread.
-  * @param  argument: Not used
-  * @retval None
-  */
+ * @brief  Function implementing the defaultTask thread.
+ * @param  argument: Not used
+ * @retval None
+ */
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void const * argument)
 {
   /* USER CODE BEGIN 5 */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
+    /* Infinite loop */
+    for (;;) {
+        osDelay(1);
+    }
   /* USER CODE END 5 */
 }
 
@@ -359,11 +450,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
-  __disable_irq();
-  while (1)
-  {
-  }
+    /* User can add his own implementation to report the HAL error return state */
+    __disable_irq();
+    while (1) {
+    }
   /* USER CODE END Error_Handler_Debug */
 }
 
