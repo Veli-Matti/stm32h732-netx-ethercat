@@ -29,7 +29,7 @@
 #include <time.h>
 #include <sys/time.h>
 #include <sys/times.h>
-
+#include "stm32h743xx.h"
 
 /* Variables */
 extern int __io_putchar(int ch) __attribute__((weak));
@@ -39,6 +39,12 @@ extern int __io_getchar(void) __attribute__((weak));
 char *__env[1] = { 0 };
 char **environ = __env;
 
+int __io_putchar(int ch)
+{
+ // Write character to ITM ch.0
+ ITM_SendChar(ch);
+ return(ch);
+}
 
 /* Functions */
 void initialise_monitor_handles()
