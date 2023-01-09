@@ -74,7 +74,6 @@ __IO uint32_t uwPrescalerValue = 0;
  */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 
-
     if (g_pfTimerCallback != NULL) {
         g_pfTimerCallback(g_pTimerPrm);
     }
