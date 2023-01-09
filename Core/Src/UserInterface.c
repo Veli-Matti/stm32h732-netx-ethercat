@@ -80,6 +80,16 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 }
 #endif
 
+/**
+ * @brief  Returns the user Button state.
+ * @param  None
+ * @retval The Button GPIO pin value.
+ */
+static uint32_t UserInterfaceGetUserButtonState()
+{
+	return HAL_GPIO_ReadPin(USER_Btn_GPIO_Port, USER_Btn_Pin);
+}
+
 /**********************************************************************************//**
  Initializes the IO hardware
  \return         eRslt ( UI_OK == succeeded )
@@ -159,14 +169,12 @@ UI_RESULT_E UserInterface_init(void) {
  \return         eRslt ( UI_OK == succeeded )
  **************************************************************************************/
 UI_RESULT_E UserInterface_putOutData(uint32_t ulData) {
-// VMK
-#if 0
     /*due to limited number of available LEDs on Nucelo board, map only 2 data bits to two LEDs*/
-    HAL_GPIO_WritePin(GPIO_PORT[LED1], GPIO_PIN[LED1],
+    HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin,
             ulData & 0x00000008 ? GPIO_PIN_SET : GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(GPIO_PORT[LED2], GPIO_PIN[LED2],
+    HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin,
             ulData & 0x00000800 ? GPIO_PIN_SET : GPIO_PIN_RESET);
-#endif
+
     return UI_OK;
 }
 
@@ -207,16 +215,12 @@ UI_RESULT_E UserInterface_putStatLedOn(UI_STATUS_LED_TYPE_E eStatusLed) {
 }
 
 UI_RESULT_E UserInterface_updateStatLed(void) {
-// VMK
-#if 0
-
     /* map only the ALARM and ERROR flags to one LED (or'ed) , other status flags are ignored due to limited number of status LEDs*/
     if (g_cStatusLed & (UI_STAT_LED_ERROR_MSK | UI_STAT_LED_ALARM_MSK)) {
-        HAL_GPIO_WritePin(GPIO_PORT[LED3], GPIO_PIN[LED3], GPIO_PIN_SET);
+        HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, GPIO_PIN_SET);
     } else {
-        HAL_GPIO_WritePin(GPIO_PORT[LED3], GPIO_PIN[LED3], GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, GPIO_PIN_RESET);
     }
-#endif
     return UI_OK;
 }
 
@@ -253,9 +257,10 @@ UI_RESULT_E UserInterface_putStatLedOff(UI_STATUS_LED_TYPE_E eStatusLed) {
  \return        eRslt ( UI_OK == succeeded )
  **************************************************************************************/
 uint32_t UserInterface_getInData(void) {
-    uint32_t ulTempInput = 0;
-    // VMK
-    // ulTempInput = BSP_PB_GetState(BUTTON_USER);
+
+	uint32_t ulTempInput = 0;
+
+    ulTempInput = UserInterfaceGetUserButtonState();
 
     return ((uint32_t) ulTempInput);
 }
@@ -270,12 +275,10 @@ uint32_t UserInterface_getInData(void) {
 uint32_t UserInterface_getRotary(void) {
 
     uint32_t ulTempInput = 0;
-// VMK
-#if 0
 
-    ulTempInput = (BSP_PB_GetState(BUTTON_USER) << 2)
-            + (BSP_PB_GetState(BUTTON_USER) << 4 << 3);
-#endif
+    ulTempInput = (UserInterfaceGetUserButtonState() << 2)
+            + (UserInterfaceGetUserButtonState() << 4 << 3);
+
     return ((uint32_t) ulTempInput);
 }
 
@@ -283,8 +286,7 @@ uint8_t UserInterface_getRotary0(void) {
 
     uint32_t ulTempInput = 0;
 
-    // VMK
-    // ulTempInput = BSP_PB_GetState(BUTTON_USER) << 2;
+    ulTempInput = UserInterfaceGetUserButtonState() << 2;
 
     return ((uint8_t) ulTempInput);
 }
@@ -293,8 +295,7 @@ uint8_t UserInterface_getRotary1(void) {
 
     uint32_t ulTempInput = 0;
 
-    // VMK
-    // ulTempInput = BSP_PB_GetState(BUTTON_USER) << 3;
+    ulTempInput = UserInterfaceGetUserButtonState() << 3;
 
     return ((uint8_t) ulTempInput);
 }
@@ -307,11 +308,10 @@ uint8_t UserInterface_getRotary1(void) {
 UI_DIAG_T UserInterface_getDiag(void) {
 
     UI_DIAG_T tDiag = { { 0 } };
-// VMK
-#if 0
-    tDiag.fAlarm0 = BSP_PB_GetState(BUTTON_USER);
-    tDiag.fError0 = BSP_PB_GetState(BUTTON_USER);
-#endif
+
+    tDiag.fAlarm0 = UserInterfaceGetUserButtonState();
+    tDiag.fError0 = UserInterfaceGetUserButtonState();
+
     return tDiag;
 }
 
@@ -325,11 +325,12 @@ UI_DIAG_T UserInterface_getDiag(void) {
  \return        eRslt ( UI_OK == succeeded )
  **************************************************************************************/
 uint8_t UserInterface_getDiagAlarm0(void) {
-    uint8_t ulTempInput = 0;
-// VMK
-//    ulTempInput = BSP_PB_GetState(BUTTON_USER);
 
-    return ((uint8_t) ulTempInput);
+	uint8_t ulTempInput = 0;
+
+	ulTempInput = UserInterfaceGetUserButtonState();
+
+	return ((uint8_t) ulTempInput);
 }
 
 /**********************************************************************************//**
@@ -338,10 +339,10 @@ uint8_t UserInterface_getDiagAlarm0(void) {
  \return        eRslt ( UI_OK == succeeded )
  **************************************************************************************/
 uint8_t UserInterface_getDiagError0(void) {
-    uint8_t ulTempInput = 0;
 
-    // VMK
-    // ulTempInput = BSP_PB_GetState(BUTTON_USER);
+	uint8_t ulTempInput = 0;
+
+    ulTempInput = UserInterfaceGetUserButtonState();
 
     return ((uint8_t) ulTempInput);
 }
@@ -394,13 +395,3 @@ int UserInterface_kbhit(void) {
 void UserInterface_Sleep(uint32_t ulSleepTimeMs) {
     HAL_Delay(ulSleepTimeMs);
 }
-
-// VMK
-#if 0
-static void Error_Handler(void) {
-    /* Turn LED3 on */
-    BSP_LED_On(LED3);
-    while (1) {
-    }
-}
-#endif
