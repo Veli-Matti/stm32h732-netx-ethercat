@@ -306,8 +306,7 @@ void* OS_CreateLock(void)
 /*****************************************************************************/
 void OS_EnterLock(void* pvLock)
 {
-// VMK. Commented out temporarily. Fix me TOMORROW!
-//	HAL_NVIC_DisableIRQ(TIMx_IRQn); // disable IRQ at NVIC
+	HAL_NVIC_DisableIRQ(TIM3_IRQn); // disable IRQ at NVIC
 	s_ulIrqSemaphore++;
 }
 
@@ -321,8 +320,7 @@ void OS_LeaveLock(void* pvLock)
 	  s_ulIrqSemaphore-=1;
 	  if(s_ulIrqSemaphore == 0)
 	  {
-// VMK. Commented out temporarily. Fix me TOMORROW!
-//			HAL_NVIC_EnableIRQ(TIMx_IRQn); // enable IRQ at NVIC
+	      HAL_NVIC_EnableIRQ(TIM3_IRQn); // enable IRQ at NVIC
 	  }
 }
 
@@ -352,8 +350,7 @@ void* OS_CreateMutex(void)
 /*****************************************************************************/
 int OS_WaitMutex(void* pvMutex, uint32_t ulTimeout)
 { 
-// VMK. Commented out temporarily. Fix me TOMORROW!
-//	HAL_NVIC_DisableIRQ(TIMx_IRQn); // disable IRQ at NVIC
+	HAL_NVIC_DisableIRQ(TIM3_IRQn); // disable IRQ at NVIC
 	s_ulIrqSemaphore++;
 
     UNREFERENCED_PARAMETER(pvMutex);
@@ -371,8 +368,7 @@ void OS_ReleaseMutex(void* pvMutex)
 	  s_ulIrqSemaphore-=1;
 	  if(s_ulIrqSemaphore == 0)
 	  {
-// VMK. Commented out temporarily. Fix me TOMORROW!
-//			HAL_NVIC_EnableIRQ(TIMx_IRQn); // enable IRQ at NVIC
+			HAL_NVIC_EnableIRQ(TIM3_IRQn); // enable IRQ at NVIC
 	  }
 }
 
