@@ -47,20 +47,11 @@
 #define UI_STAT_LED_ALARM_MSK   0x08 /** LED P408 */
 
 static uint8_t g_cStatusLed = 0; /* status LED register */
-// VMK
-//extern UART_HandleTypeDef UartHandle;
-//extern GPIO_TypeDef *GPIO_PORT[];
-//extern const uint16_t GPIO_PIN[];
-
-//static void Error_Handler(void);
 
 UI_RESULT_E UserInterface_updateStatLed(void);
 
 void (*g_pfTimerCallback)(void *pPrm) = NULL;
 void *g_pTimerPrm = NULL;
-
-/* TIM handle declaration */
-//TIM_HandleTypeDef TimHandle;
 
 /* Prescaler declaration */
 __IO uint32_t uwPrescalerValue = 0;

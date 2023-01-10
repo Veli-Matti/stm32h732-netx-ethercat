@@ -385,12 +385,11 @@ static void MX_TIM3_Init(void)
   }
   /* USER CODE BEGIN TIM3_Init 2 */
   // VMK. Commented out for now.
-  /*
+
   if (HAL_TIM_Base_Start_IT(&htim3) != HAL_OK)
   {
     Error_Handler();
   }
-  */
   /* USER CODE END TIM3_Init 2 */
 
 }
